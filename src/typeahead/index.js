@@ -186,7 +186,7 @@ var Typeahead = React.createClass({
   },
 
   _onTextEntryUpdated: function(event) {
-    var value = event.target.value;
+    var value = (event) ? event.target.value : '';
     this.setState({visible: this.getOptionsForValue(value, _.map(this.props.menuItems, 'label')),
                    selection: null,
                    entryValue: value});
