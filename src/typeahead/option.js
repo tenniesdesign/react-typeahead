@@ -4,6 +4,7 @@
 
 var React = require('react');
 var classNames = require('classnames');
+var _ = require('lodash');
 
 /**
  * A single option within the TypeaheadSelector
@@ -17,6 +18,12 @@ var TypeaheadOption = React.createClass({
     hover: React.PropTypes.bool
   },
 
+  getInitialState: function() {
+    return {
+      hover: false
+    }
+  },
+
   getDefaultProps: function() {
     return {
       customClasses: {},
@@ -26,24 +33,47 @@ var TypeaheadOption = React.createClass({
     };
   },
 
-  render: function() {
-    var classes = {};
-    classes[this.props.customClasses.hover || "hover"] = !!this.props.hover;
-    classes[this.props.customClasses.listItem] = !!this.props.customClasses.listItem;
-
-    if (this.props.customValue) {
-      classes[this.props.customClasses.customAdd] = !!this.props.customClasses.customAdd;
+  style() {
+    return {
+      root: {
+        backgroundColor: this.context.muiTheme.component.menu.backgroundColor
+      },
+      hover: {
+        backgroundColor: this.context.muiTheme.component.menuItem.hoverColor
+      },
+      link: {
+        textDecoration: 'none',
+        color: this.context.muiTheme.palette.textColor,
+        padding: '5px 25px',
+        width: '100%',
+        display: 'block'
+      }
     }
+  },
 
-    var classList = classNames(classes);
+  contextTypes: {
+    muiTheme: React.PropTypes.object
+  },
+
+  render: function() {
+
+    var hoverStyle = (this.props.hover || this.state.hover) ? _.assign(this.style().root, this.style().hover) : this.style().root;
 
     return (
-      <li className={classList} onClick={this._onClick}>
-        <a href="javascript: void 0;" className={this._getClasses()} ref="anchor">
+      <li style={hoverStyle} onMouseOver={this._onHover} onMouseOut={this._onHover} onMouseDown={this._onClick} >
+        <a href="javascript: void 0;" style={this.style().link} className={this._getClasses()} ref="anchor">
           { this.props.children }
         </a>
       </li>
     );
+  },
+
+  _onHover: function(event) {
+    if(event.type === 'mouseover'){
+      this.setState({hover: true});
+    } else if (event.type === 'mouseout') {
+      this.setState({hover: false});
+    }
   },
 
   _getClasses: function() {

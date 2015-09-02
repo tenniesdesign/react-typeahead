@@ -3,6 +3,7 @@
  */
 
 var React = require('react');
+var Paper = require('material-ui').Paper;
 var TypeaheadOption = require('./option');
 var classNames = require('classnames');
 
@@ -27,6 +28,27 @@ var TypeaheadSelector = React.createClass({
       customValue: null,
       onOptionSelected: function(option) { }
     };
+  },
+
+  style() {
+    return {
+      root: {
+        position: 'absolute',
+        backgroundColor: this.context.muiTheme.component.menu.backgroundColor,
+        width: '100%',
+        padding: '8px 0',
+        zIndex: 3
+      },
+      list: {
+        listStyle: 'none',
+        margin: 0,
+        padding: 0
+      }
+    }
+  },
+
+  contextTypes: {
+    muiTheme: React.PropTypes.object
   },
 
   render: function() {
@@ -66,10 +88,12 @@ var TypeaheadSelector = React.createClass({
 
 
     return (
-      <ul className={classList}>
-        { customValue }
-        { results }
-      </ul>
+      <Paper style={this.style().root} rounded={true}>
+        <ul className={classList} style={this.style().list}>
+          { customValue }
+          { results }
+        </ul>
+      </Paper>
     );
   },
 

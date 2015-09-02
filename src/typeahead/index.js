@@ -7,6 +7,8 @@ var TypeaheadSelector = require('./selector');
 var KeyEvent = require('../keyevent');
 var fuzzy = require('fuzzy');
 var classNames = require('classnames');
+var TextField = require('material-ui').TextField;
+var _ = require('lodash');
 
 var IDENTITY_FN = function(input) { return input; };
 var _generateAccessor = function(field) {
@@ -24,13 +26,13 @@ var Typeahead = React.createClass({
     name: React.PropTypes.string,
     customClasses: React.PropTypes.object,
     maxVisible: React.PropTypes.number,
-    options: React.PropTypes.array,
+    menuItems: React.PropTypes.array,
     allowCustomValues: React.PropTypes.number,
     defaultValue: React.PropTypes.string,
     placeholder: React.PropTypes.string,
-    textarea: React.PropTypes.bool,
     inputProps: React.PropTypes.object,
     onOptionSelected: React.PropTypes.func,
+    valueLink: React.PropTypes.string,
     onChange: React.PropTypes.func,
     onKeyDown: React.PropTypes.func,
     onKeyUp: React.PropTypes.func,
@@ -52,19 +54,19 @@ var Typeahead = React.createClass({
 
   getDefaultProps: function() {
     return {
-      options: [],
+      mapItems: [],
       customClasses: {},
       allowCustomValues: 0,
       defaultValue: "",
       placeholder: "",
-      textarea: false,
       inputProps: {},
+      maxVisible: 10,
       onOptionSelected: function(option) {},
       onChange: function(event) {},
       onKeyDown: function(event) {},
       onKeyUp: function(event) {},
       onFocus: function(event) {},
-      onBlur: function(event) {},
+      onBlur: this._onEscape,
       filterOption: null
     };
   },
@@ -72,10 +74,10 @@ var Typeahead = React.createClass({
   getInitialState: function() {
     return {
       // The currently visible set of options
-      visible: this.getOptionsForValue(this.props.defaultValue, this.props.options),
+      visible: this.getOptionsForValue(this.props.defaultValue, []),
 
       // This should be called something else, "entryValue"
-      entryValue: this.props.defaultValue,
+      entryValue: _.result(_.find(this.props.menuItems, 'value', (this.props.valueLink ) ? this.props.valueLink.value : this.props.value ), 'label'),
 
       // A valid typeahead value
       selection: null,
@@ -169,15 +171,23 @@ var Typeahead = React.createClass({
     var formInputOptionString = formInputOption(option);
 
     nEntry.value = optionString;
-    this.setState({visible: this.getOptionsForValue(optionString, this.props.options),
+    this.setState({visible: this.getOptionsForValue(optionString, _.map(this.props.menuItems, 'label')),
                    selection: formInputOptionString,
                    entryValue: optionString});
-    return this.props.onOptionSelected(option, event);
+
+    if (this.props.valueLink) {
+      let matches = this.props.menuItems.filter(m => m.label == option);
+      if (matches.length > 0) {
+        return this.props.valueLink.requestChange(matches[0].value)
+      }
+    } else {
+      return this.props.onOptionSelected(option, event);
+    }
   },
 
-  _onTextEntryUpdated: function() {
-    var value = this.refs.entry.getDOMNode().value;
-    this.setState({visible: this.getOptionsForValue(value, this.props.options),
+  _onTextEntryUpdated: function(event) {
+    var value = event.target.value;
+    this.setState({visible: this.getOptionsForValue(value, _.map(this.props.menuItems, 'label')),
                    selection: null,
                    entryValue: value});
   },
@@ -254,7 +264,7 @@ var Typeahead = React.createClass({
       this.props.onChange(event);
     }
 
-    this._onTextEntryUpdated();
+    this._onTextEntryUpdated(event);
   },
 
   _onKeyDown: function(event) {
@@ -277,8 +287,16 @@ var Typeahead = React.createClass({
 
   componentWillReceiveProps: function(nextProps) {
     this.setState({
-      visible: this.getOptionsForValue(this.state.entryValue, nextProps.options)
+      visible: this.getOptionsForValue(this.state.entryValue, _.map(nextProps.menuItems, 'label'))
     });
+  },
+
+  style() {
+    return {
+      root: {
+        position: 'relative'
+      }
+    };
   },
 
   render: function() {
@@ -291,23 +309,19 @@ var Typeahead = React.createClass({
     };
     classes[this.props.className] = !!this.props.className;
     var classList = classNames(classes);
-
-    var InputElement = this.props.textarea ? 'textarea' : 'input';
-
     return (
-      <div className={classList}>
+      <div className={classList} style={this.style().root}>
         { this._renderHiddenInput() }
-        <InputElement ref="entry" type="text"
+        <TextField ref="entry" type="text"
           {...this.props.inputProps}
           placeholder={this.props.placeholder}
           className={inputClassList}
           value={this.state.entryValue}
-          defaultValue={this.props.defaultValue}
           onChange={this._onChange}
           onKeyDown={this._onKeyDown}
           onKeyUp={this.props.onKeyUp}
-          onFocus={this.props.onFocus}
-          onBlur={this.props.onBlur}
+          onFocus={this._onFocus}
+          onBlur={this._onBlur}
         />
         { this._renderIncrementalSearchResults() }
       </div>
@@ -362,7 +376,14 @@ var Typeahead = React.createClass({
 
   _hasHint: function() {
     return this.state.visible.length > 0 || this._hasCustomValue();
-  }
+  },
+
+  _onBlur(event) {
+    this.setState({ visible: false})
+  },
+
+  // Todo onfocus show options
+
 });
 
 module.exports = Typeahead;

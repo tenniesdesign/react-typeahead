@@ -14,10 +14,6 @@ var Token = React.createClass({
     className: React.PropTypes.string,
     name: React.PropTypes.string,
     children: React.PropTypes.string,
-    object: React.PropTypes.oneOfType([
-      React.PropTypes.string,
-      React.PropTypes.object,
-    ]),
     onRemove: React.PropTypes.func
   },
 
@@ -46,7 +42,7 @@ var Token = React.createClass({
       <input
         type="hidden"
         name={ this.props.name + '[]' }
-        value={ this.props.object }
+        value={ this.props.children }
       />
     );
   },
@@ -57,7 +53,7 @@ var Token = React.createClass({
     }
     return (
       <a className="typeahead-token-close" href="#" onClick={function(event) {
-          this.props.onRemove(this.props.object);
+          this.props.onRemove(this.props.children);
           event.preventDefault();
         }.bind(this)}>&#x00d7;</a>
     );
