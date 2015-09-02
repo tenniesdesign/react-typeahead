@@ -165,6 +165,7 @@ var TypeaheadTokenizer = React.createClass({
           allowCustomValues={this.props.allowCustomValues}
           customClasses={this.props.customClasses}
           options={this._getOptionsForTypeahead()}
+          menuItems={this.props.menuItems}
           defaultValue={this.props.defaultValue}
           maxVisible={this.props.maxVisible}
           onOptionSelected={this._addTokenForValue}
