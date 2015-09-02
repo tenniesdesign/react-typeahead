@@ -26,7 +26,7 @@ var Token = React.createClass({
       root: {
         display: 'inline-block',
         padding: '4px 5px',
-        marginRight: '10px'
+        margin: '0 10px 10px 0'
       },
       children: {
         display: 'inline-block',
