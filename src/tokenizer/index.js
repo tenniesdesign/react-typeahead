@@ -148,7 +148,7 @@ var TypeaheadTokenizer = React.createClass({
     this.state.selected.push(value);
     this.setState({selected: this.state.selected});
     this.refs.typeahead.setEntryText("");
-    this.props.onTokenAdd(value);
+    this.props.onTokenAdd(value, this.state.selected);
   },
 
   render: function() {
